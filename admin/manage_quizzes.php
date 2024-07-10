@@ -90,7 +90,7 @@ $languages = $stmt_languages->fetchAll(PDO::FETCH_ASSOC);
                 <label for="language_id">Langue du quiz</label>
                 <select class="form-control" id="language_id" name="language_id" required>
                     <?php foreach ($languages as $language) : ?>
-                        <option value="<?php echo $language['id']; ?>"><?php echo htmlspecialchars($language['name']); ?></option>
+                        <option value="<?php echo htmlspecialchars($language['id']); ?>"><?php echo htmlspecialchars($language['name']); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -118,15 +118,13 @@ $languages = $stmt_languages->fetchAll(PDO::FETCH_ASSOC);
                     <td><?php echo htmlspecialchars(strlen($quiz['title']) > 50 ? substr($quiz['title'], 0, 30) . '...' : $quiz['title']); ?></td>
                     <td><?php echo htmlspecialchars(strlen($quiz['description']) > 50 ? substr($quiz['description'], 0, 50) . '...' : $quiz['description']); ?></td>
                     <td>
-
-                        <a href="/quiz.php?hash=<?php echo $quiz['hash']; ?>" class="copy-link">Voir le Quiz</a>
+                        <a href="/quiz.php?hash=<?php echo htmlspecialchars($quiz['hash']); ?>" class="copy-link">Voir le Quiz</a>
                         <button class="btn btn-sm btn-outline-secondary" data-target=".copy-link">Copier</button>
-
                     </td>
                     <td>
-                        <a href="edit_quiz.php?id=<?php echo $quiz['id']; ?>" class="btn btn-primary btn-sm">Éditer</a>
-                        <button class="btn btn-danger btn-sm" onclick="deleteQuiz(<?php echo $quiz['id']; ?>)">Supprimer</button>
-                        <a href="manage_questions.php?id=<?php echo $quiz['id']; ?>" class="btn btn-info btn-sm">Éditer</a>
+                        <a href="edit_quiz.php?id=<?php echo htmlspecialchars($quiz['id']); ?>" class="btn btn-primary btn-sm">Éditer</a>
+                        <button class="btn btn-danger btn-sm" onclick="deleteQuiz(<?php echo htmlspecialchars($quiz['id']); ?>)">Supprimer</button>
+                        <a href="manage_questions.php?id=<?php echo htmlspecialchars($quiz['id']); ?>" class="btn btn-info btn-sm">Questions</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -157,37 +155,36 @@ $languages = $stmt_languages->fetchAll(PDO::FETCH_ASSOC);
 
     var copyButtons = document.querySelectorAll('button[data-target=".copy-link"]');
 
-// Parcourir tous les boutons "Copier" et ajouter un écouteur d'événements pour le clic
-copyButtons.forEach(function(button) {
-  button.addEventListener('click', function() {
-    // Récupérer le lien hypertexte correspondant au bouton "Copier" cliqué
-    var link = this.previousElementSibling;
-    var url = link.href;
+    // Parcourir tous les boutons "Copier" et ajouter un écouteur d'événements pour le clic
+    copyButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            // Récupérer le lien hypertexte correspondant au bouton "Copier" cliqué
+            var link = this.previousElementSibling;
+            var url = link.href;
 
-    // Créer un élément temporaire pour copier le texte
-    var tempInput = document.createElement('input');
-    tempInput.value = url;
-    document.body.appendChild(tempInput);
+            // Créer un élément temporaire pour copier le texte
+            var tempInput = document.createElement('input');
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
 
-    // Sélectionner le texte et le copier dans le presse-papiers
-    tempInput.select();
-    document.execCommand('copy');
+            // Sélectionner le texte et le copier dans le presse-papiers
+            tempInput.select();
+            document.execCommand('copy');
 
-    // Supprimer l'élément temporaire
-    document.body.removeChild(tempInput);
+            // Supprimer l'élément temporaire
+            document.body.removeChild(tempInput);
 
-    // Utiliser SweetAlert pour afficher un message de confirmation
-    Swal.fire({
-        icon: 'success',
-        title: 'Copié !',
-        text: 'URL copiée dans le presse-papiers.',
-        timer: 2000,
-        timerProgressBar: true,
-        showConfirmButton: false
+            // Utiliser SweetAlert pour afficher un message de confirmation
+            Swal.fire({
+                icon: 'success',
+                title: 'Copié !',
+                text: 'URL copiée dans le presse-papiers.',
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+        });
     });
-  });
-});
-
 </script>
 
 <?php include 'includes/footer.php'; ?>
