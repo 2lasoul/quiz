@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz sur le Soleil</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="quiz-header">
+        <h1 id="quiz-title">Le Roi du Système Solaire : Testez vos connaissances sur le Soleil !</h1>
+        <p id="quiz-description">Bienvenue dans ce quiz passionnant sur le soleil, l'étoile la plus proche de notre planète...</p>
+    </div>
+
+    <div class="quiz-body">
+        <!-- Contenu des questions sera ajouté dynamiquement ici -->
+    </div>
+
+    <div class="quiz-footer">
+        <button id="next-button" class="btn btn-primary">Suivante</button>
+    </div>
+
+    <div id="quiz-result" class="quiz-result">
+        <!-- Résultat du quiz sera affiché ici -->
+    </div>
+</div>
+
+<script>
+    // Exemple de quiz.js (à adapter selon vos besoins)
+
+const quizContainer = document.querySelector('.quiz-body');
+const nextButton = document.getElementById('next-button');
+const quizResult = document.getElementById('quiz-result');
+let currentQuestionIndex = 0;
+let score = 0;
+
+// Liste des questions du quiz (à remplacer par la récupération dynamique depuis le serveur)
+const questions = [
+    {
+        question_text: "Quelle est la température approximative de la surface du soleil ?",
+        answers: [
+            { answer_text: "5 000 degrés Celsius", is_correct: false },
+            { answer_text: "15 000 degrés Celsius", is_correct: false },
+            { answer_text: "5 500 degrés Celsius", is_correct: true },
+            { answer_text: "15 millions de degrés Celsius !!", is_correct: false }
+        ]
+    },
+    {
+        question_text: "Quel type d'étoile est le soleil ?",
+        answers: [
+            { answer_text: "Naine rouge", is_correct: false },
+            { answer_text: "Naine blanche", is_correct: false },
+            { answer_text: "Naine jaune", is_correct: true },
+            { answer_text: "Supergéante rouge", is_correct: false }
+        ]
+    },
+    // Ajoutez d'autres questions ici...
+];
+
+// Fonction pour charger une question dans l'interface
+function loadQuestion(index) {
+    const question = questions[index];
+    quizContainer.innerHTML = `
+        <h2>${question.question_text}</h2>
+        <ul>
+            ${question.answers.map((answer, idx) => `
+                <li>
+                    <input type="radio" name="answer" value="${idx}">
+                    <label>${answer.answer_text}</label>
+                </li>
+            `).join('')}
+        </ul>
+    `;
+}
+
+// Fonction pour vérifier la réponse de l'utilisateur
+function checkAnswer(index, selectedAnswer) {
+    const question = questions[index];
+    const correctAnswerIndex = question.answers.findIndex(answer => answer.is_correct);
+
+    if (selectedAnswer === correctAnswerIndex.toString()) {
+        score++;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// Fonction pour afficher le résultat du quiz
+function showResult() {
+    quizContainer.style.display = 'none';
+    nextButton.style.display = 'none';
+
+    quizResult.innerHTML = `
+        <h2>Votre score : ${score} / ${questions.length}</h2>
+        <button class="btn btn-primary" onclick="restartQuiz()">Recommencer</button>
+    `;
+    quizResult.style.display = 'block';
+}
+
+// Fonction pour recommencer le quiz
+function restartQuiz() {
+    currentQuestionIndex = 0;
+    score = 0;
+    quizResult.style.display = 'none';
+    quizContainer.style.display = 'block';
+    nextButton.style.display = 'block';
+    loadQuestion(currentQuestionIndex);
+}
+
+// Événement lorsque l'utilisateur clique sur le bouton "Suivante"
+nextButton.addEventListener('click', () => {
+    const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+    if (!selectedAnswer) {
+        alert('Veuillez sélectionner une réponse.');
+        return;
+    }
+
+    const isCorrect = checkAnswer(currentQuestionIndex, selectedAnswer.value);
+    if (isCorrect) {
+        alert('Bonne réponse !');
+    } else {
+        alert('Désolé, mauvaise réponse.');
+    }
+
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+        loadQuestion(currentQuestionIndex);
+    } else {
+        showResult();
+    }
+});
+
+// Chargement initial de la première question
+loadQuestion(currentQuestionIndex);
+
+</script>
+</body>
+</html>
