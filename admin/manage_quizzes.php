@@ -118,7 +118,7 @@ $languages = $stmt_languages->fetchAll(PDO::FETCH_ASSOC);
                     <td><?php echo htmlspecialchars(strlen($quiz['title']) > 50 ? substr($quiz['title'], 0, 30) . '...' : $quiz['title']); ?></td>
                     <td><?php echo htmlspecialchars(strlen($quiz['description']) > 50 ? substr($quiz['description'], 0, 50) . '...' : $quiz['description']); ?></td>
                     <td>
-                        <a href="/quiz.php?hash=<?php echo htmlspecialchars($quiz['hash']); ?>" class="copy-link" target="_blank">Voir le Quiz</a>
+                        <a href="/quiz.php?hash=<?php echo htmlspecialchars($quiz['hash']); ?>&question_id=1" class="copy-link" target="_blank">Voir le Quiz</a>
                         <button class="btn btn-sm btn-outline-secondary" data-target=".copy-link">Copier</button>
                     </td>
                     <td>

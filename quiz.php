@@ -25,7 +25,10 @@ $total_questions = $stmt_total->fetchColumn();
 $questions = [];
 foreach ($quiz_data as $row) {
     if (!isset($questions[$row['question_id']])) {
-        $questions[$row['question_id']] = $row['question_text'];
+        $questions[$row['question_id']] = [
+            'text' => $row['question_text'],
+            'type' => $row['question_type']
+        ];
     }
 }
 $question_ids = array_keys($questions);
@@ -50,6 +53,33 @@ $quiz_description = isset($quiz_data[0]['quiz_description']) ? $quiz_data[0]['qu
     <script src="admin/js/jquery.min.js"></script>
     <script src="admin/js/sweetalert2.min.js"></script>
     <link rel="stylesheet" href="admin/css/sweetalert2.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            color: #333;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 18px;
+        }
+        p {
+            font-size: 14px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+
+    </style>
 </head>
 <body>
 
@@ -59,17 +89,26 @@ $quiz_description = isset($quiz_data[0]['quiz_description']) ? $quiz_data[0]['qu
         <p><?php echo htmlspecialchars($quiz_description); ?></p>
         
         <div class="question">
-            <h2><?php echo htmlspecialchars($questions[$current_question_id]); ?></h2>
+            <h2><?php echo htmlspecialchars($questions[$current_question_id]['text']); ?></h2>
             <p>Question <?php echo $current_question_number; ?> sur <?php echo $total_questions; ?></p>
             <ul>
                 <?php foreach ($quiz_data as $row): ?>
                     <?php if ($row['question_id'] == $current_question_id): ?>
-                        <li>
-                            <label>
-                                <input type="radio" name="answer" value="<?php echo htmlspecialchars($row['answer_id']); ?>" data-correct="<?php echo $row['is_correct'] ? 'true' : 'false'; ?>">
-                                <?php echo htmlspecialchars($row['answer_text']); ?>
-                            </label>
-                        </li>
+                        <?php if ($questions[$current_question_id]['type'] === 'single'): ?>
+                            <li>
+                                <label>
+                                    <input type="radio" name="answer" value="<?php echo htmlspecialchars($row['answer_id']); ?>" data-correct="<?php echo $row['is_correct'] ? 'true' : 'false'; ?>">
+                                    <?php echo htmlspecialchars($row['answer_text']); ?>
+                                </label>
+                            </li>
+                        <?php elseif ($questions[$current_question_id]['type'] === 'multiple'): ?>
+                            <li>
+                                <label>
+                                    <input type="checkbox" name="answer[]" value="<?php echo htmlspecialchars($row['answer_id']); ?>" data-correct="<?php echo $row['is_correct'] ? 'true' : 'false'; ?>">
+                                    <?php echo htmlspecialchars($row['answer_text']); ?>
+                                </label>
+                            </li>
+                        <?php endif; ?>
                     <?php endif; ?>
                 <?php endforeach; ?>
             </ul>
@@ -80,13 +119,19 @@ $quiz_description = isset($quiz_data[0]['quiz_description']) ? $quiz_data[0]['qu
     <?php endif; ?>
 </div>
 
-
 <script>
 $(document).ready(function() {
     $('#btn-next').on('click', function() {
-        // Vérifier si une réponse a été sélectionnée
+        // Récupérer le type de question
+        var questionType = <?php echo json_encode($questions[$current_question_id]['type']); ?>;
+        
+        // Initialiser les variables
         var selectedAnswer = $('input[name="answer"]:checked').val();
-        if (!selectedAnswer) {
+        var selectedCheckboxes = $('input[name="answer[]"]:checked');
+        var atLeastOneChecked = selectedCheckboxes.length > 0;
+
+        // Vérification de la sélection
+        if (questionType === 'single' && !selectedAnswer) {
             Swal.fire({
                 icon: 'question',
                 title: 'Oops...',
@@ -95,16 +140,22 @@ $(document).ready(function() {
             return;
         }
 
-        // Vérifier si la réponse sélectionnée est correcte
-        var isCorrect = $('input[name="answer"]:checked').data('correct') === true;
+        if (questionType === 'multiple' && !atLeastOneChecked) {
+            Swal.fire({
+                icon: 'question',
+                title: 'Oops...',
+                text: 'Vous devez sélectionner au moins une réponse',
+            });
+            return;
+        }
 
-        // Afficher une alerte ou une modal avec le résultat
+        // Vérification des réponses
+        var isCorrect = false;
+        var correctCount = 0;
+        var incorrectCount = 0;
         var nextQuestionId = <?php echo json_encode($next_question_id); ?>;
         var quizHash = <?php echo json_encode($quiz_hash); ?>;
         var alertOptions = {
-            icon: isCorrect ? 'success' : 'error',
-            title: isCorrect ? 'Bonne réponse !' : 'Mauvaise réponse...',
-            text: isCorrect ? 'Vous avez sélectionné la bonne réponse.' : 'Ce n\'est pas la bonne réponse.',
             timer: 3000,
             showConfirmButton: false,
             willClose: () => {
@@ -122,6 +173,39 @@ $(document).ready(function() {
             }
         };
 
+        if (questionType === 'single') {
+            isCorrect = $('input[name="answer"]:checked').data('correct') === true;
+            alertOptions.icon = isCorrect ? 'success' : 'error';
+            alertOptions.title = isCorrect ? 'Bonne réponse !' : 'Mauvaise réponse...';
+            alertOptions.text = isCorrect ? 'Vous avez sélectionné la bonne réponse.' : 'Vous avez sélectionné la mauvaise réponse.';
+        } 
+        else if (questionType === 'multiple') {
+            selectedCheckboxes.each(function() {
+                if ($(this).data('correct') === true) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+            });
+            var totalCorrectAnswers = $('input[name="answer[]"][data-correct="true"]').length;
+            
+            if (correctCount === totalCorrectAnswers && incorrectCount === 0) {
+                isCorrect = true;
+                alertOptions.icon = 'success';
+                alertOptions.title = 'Bonne réponse !';
+                alertOptions.text = 'Vous avez sélectionné toutes les bonnes réponses.';
+            } else if (correctCount > 0 && incorrectCount === 0) {
+                alertOptions.icon = 'info';
+                alertOptions.title = 'Pas tout à fait...';
+                alertOptions.text = 'Vous avez bien sélectionné ' + correctCount + ' bonne(s) réponse(s), mais il en manque une ou plusieurs.';
+            } else {
+                alertOptions.icon = 'error';
+                alertOptions.title = 'Mauvaise réponse...';
+                alertOptions.text = 'Vous avez sélectionné une ou plusieurs mauvaises réponses.';
+            }
+        }
+
+        // Afficher une alerte ou une modal avec le résultat
         Swal.fire(alertOptions);
     });
 });
