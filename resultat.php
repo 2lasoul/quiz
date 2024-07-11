@@ -1,5 +1,6 @@
 <?php
 require 'admin/includes/db_connect.php';
+require 'includes/functions.php';
 
 // Récupérer le hash du quiz depuis l'URL
 $quiz_hash = isset($_GET['hash']) ? $_GET['hash'] : '';

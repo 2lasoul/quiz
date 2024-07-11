@@ -1,5 +1,6 @@
 <?php
 require 'includes/db_connect.php';
+require 'includes/functions.php';
 include 'includes/header.php';
 
 // Ajouter une langue

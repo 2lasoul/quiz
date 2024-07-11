@@ -1,5 +1,6 @@
 <?php
 require 'includes/db_connect.php';
+require 'includes/functions.php';
 include 'includes/header.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_quiz'])) {
