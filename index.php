@@ -1,6 +1,7 @@
 <?php
 // Inclure le fichier de connexion à la base de données
 require 'admin/includes/db_connect.php';
+require 'includes/functions.php';
 
 // Vérifier la présence de hash et question_id dans l'URL
 if (!isset($_GET['hash']) || !isset($_GET['question_id'])) {
